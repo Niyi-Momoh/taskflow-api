@@ -1,17 +1,20 @@
 from fastapi import FastAPI
-
-from app.routers import auth, tasks
+from app.database import engine, Base
+from app.routers import users, items
 
 app = FastAPI(
-    title="TaskFlow API",
-    description="A task management REST API with JWT authentication.",
+    title="FastAPI CRUD API",
+    description="A demo CRUD API with JWT auth and PostgreSQL",
     version="1.0.0",
 )
 
-app.include_router(auth.router)
-app.include_router(tasks.router)
+@app.on_event("startup")
+def startup():
+    Base.metadata.create_all(bind=engine)
 
+app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(items.router, prefix="/items", tags=["items"])
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+@app.get("/")
+def root():
+    return {"message": "FastAPI CRUD API", "docs": "/docs"}
